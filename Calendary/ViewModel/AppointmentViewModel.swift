@@ -18,7 +18,10 @@ final class AppointmentViewModel: ObservableObject {
     func addAppointment(context: ModelContext) {
         guard !patientName.isEmpty else { return }
         
-        let newAppointment = Appointment(patientName: patientName, date: selectedDate)
+        let newAppointment = Appointment(
+            patientName: patientName,
+            date: selectedDate
+        )
         context.insert(newAppointment)
         
         do {
@@ -35,4 +38,16 @@ final class AppointmentViewModel: ObservableObject {
         try? context.save()
     }
     
+    func updateAppointment(_ appointment: Appointment, context: ModelContext) {
+        do {
+            try context.save()
+        } catch {
+            print("Erro ao atualizar: \(error)")
+        }
+    }
+    
+    func toggleDone(_ appointment: Appointment, context: ModelContext) {
+        appointment.isDone.toggle()
+        try? context.save()
+    }
 }

@@ -29,6 +29,14 @@ struct TabBarView: View {
             .tabItem {
                 Label("Agendados", systemImage: "magnifyingglass")
             }
+            
+            NavigationStack {
+                FinishedAppointmentsView()
+                    .navigationTitle("Finalizados")
+            }
+            .tabItem {
+                Label("Finalizados", systemImage: "checkmark")
+            }
         }.tint(.black)
     }
     

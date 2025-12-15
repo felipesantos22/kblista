@@ -12,32 +12,65 @@ struct AppointmentListView: View {
     
     @Environment(\.modelContext) private var modelContext
     
-    @Query(sort: \Appointment.date, order: .forward)
+    // Mostra apenas consultas NÃO finalizadas
+    @Query(
+        filter: #Predicate<Appointment> { !$0.isDone },
+        sort: \Appointment.date
+    )
     private var appointments: [Appointment]
     
     @ObservedObject var viewModel: AppointmentViewModel
     
     var body: some View {
-        ZStack{
-            LinearGradient(gradient: Gradient(colors: [.colorOne, .colorTwo]), startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [.colorOne, .colorTwo]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
             
             List {
                 ForEach(appointments) { appointment in
-                    VStack(alignment: .leading) {
-                        
-                        Text(appointment.patientName)
-                            .font(.headline)
-                        
-                        Text(appointment.date.formatted(date: .abbreviated, time: .shortened))
-                            .foregroundColor(.gray)
+                    NavigationLink {
+                        EditAppointmentView(
+                            appointment: appointment,
+                            viewModel: viewModel
+                        )
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(appointment.patientName)
+                                .font(.headline)
+                            
+                            Text(
+                                appointment.date.formatted(
+                                    date: .abbreviated,
+                                    time: .shortened
+                                )
+                            )
                             .font(.subheadline)
-                        
+                            .foregroundColor(.gray)
+                        }
+                    }
+                    // 👉 Swipe para finalizar (única forma)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        Button {
+                            viewModel.toggleDone(
+                                appointment,
+                                context: modelContext
+                            )
+                        } label: {
+                            Label("Finalizar", systemImage: "checkmark")
+                        }
+                        .tint(.green)
                     }
                 }
                 .onDelete { indexSet in
                     for index in indexSet {
-                        viewModel.deleteAppointment(appointments[index], context: modelContext)
+                        viewModel.deleteAppointment(
+                            appointments[index],
+                            context: modelContext
+                        )
                     }
                 }
             }
@@ -46,9 +79,3 @@ struct AppointmentListView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        AppointmentListView(viewModel: AppointmentViewModel())
-            .modelContainer(for: Appointment.self, inMemory: true)
-    }
-}
